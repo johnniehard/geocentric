@@ -33,8 +33,6 @@ function setup() {
 	// theEllipsoid = new Ellipsoid(6377397.155, 299.1528128); // bessel
 	theEllipsoid = new Ellipsoid(wgs84.a, wgs84.f);
 	
-
-
 	for(var feature = 0; feature < coastlines.length; feature++){
 
 		var geometry = coastlines[feature].geometry.coordinates;
@@ -49,7 +47,9 @@ function setup() {
 				coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 300);
 			}
 
-			geocentricCoordinates.push(coordinates);
+			geometry[pair][0] = coordinates[0];
+			geometry[pair][1] = coordinates[1];
+			geometry[pair][2] = coordinates[2];
 		}
 
 	}
@@ -68,17 +68,22 @@ function draw() {
 		rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
 		rotateZ(map(mouseX, 0, width, -PI, PI));
 
-		for(var i = 0; i < geocentricCoordinates.length; i++){
-			push();
-				translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
-				fill(255);
-				sphere(1, 3, 3);
-			pop();
+		for(var feature = 0; feature < coastlines.length; feature++){
+			var geometry = coastlines[feature].geometry.coordinates;
+			beginShape();
+			fill(255);
+				for(var i = 0; i < geometry.length; i+=1){
+					vertex(geometry[i][0], geometry[i][1], geometry[i][2]);
+				}
+			endShape();
 		}
+
 	pop();
 
 	fill(0, 200);
 	plane(width * 2, height * 2);
+
+	fill(255);
 }
 
 function mouseWheel(event){
