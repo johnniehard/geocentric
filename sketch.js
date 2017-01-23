@@ -7,15 +7,66 @@
 
 */
 
+var bessel;
+var geocentricCoordinates = [];
+
 function setup() {
 	bessel = new Ellipsoid(6377397.155, 299.1528128);
-	bessel_geocentric = bessel.getGeocentric(58, 17, 30);
-	console.log(bessel_geocentric);
-	console.log(bessel.getLatLon(bessel_geocentric));
+
+	createCanvas(windowWidth, windowHeight, WEBGL);
+	
+
+
+	for(var lon = 0; lon < 360; lon += 10){
+		for(var lat = 0; lat < 360; lat += 10){
+
+			var coordinates = bessel.getGeocentric(lat, lon, 0);
+			for(var i = 0; i < coordinates.length; i++){
+				coordinates[i] = map(coordinates[i], 0, bessel.a, 0, 300);
+			}
+
+			geocentricCoordinates.push(coordinates);
+
+		}
+	}
+
+	console.log(geocentricCoordinates.length);
+	console.log(geocentricCoordinates);
+
+	
+
+	// camera
+
+
+
 }
 
 function draw() {
-  
+	background(50);
+
+	camera(0, 0, 100);
+	// rotateX(HALF_PIZ);
+	rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
+	rotateZ(map(mouseX, 0, width, 0, HALF_PI));
+
+	//camera(map(mouseX, 0, width, -10000, 10000), 0, map(mouseY, 0, height, 0, 200000));
+
+	for(var i = 0; i < geocentricCoordinates.length; i++){
+
+		
+
+		push();
+		translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
+		ambientMaterial(255);
+		fill(255);
+		sphere(5);
+		//sphere(map(mouseY, 0, height, 2, 200));
+		pop();
+
+	}
+
+
+
 }
 
 /*
