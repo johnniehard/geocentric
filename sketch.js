@@ -31,18 +31,7 @@ function setup() {
 	// theEllipsoid = new Ellipsoid(6377397.155, 299.1528128); // bessel
 	theEllipsoid = new Ellipsoid(wgs84.a, wgs84.f);
 	
-	// for(var lon = 0; lon < 360; lon += 10){
-	// 	for(var lat = 0; lat < 360; lat += 10){
 
-	// 		var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
-	// 		for(var i = 0; i < coordinates.length; i++){
-	// 			coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 300);
-	// 		}
-
-	// 		geocentricCoordinates.push(coordinates);
-
-	// 	}
-	// }
 
 	for(var feature = 0; feature < coastlines.length; feature++){
 
@@ -71,25 +60,35 @@ function draw() {
 	background(0);
 
 	push();
-	rotateX(-HALF_PI);
-	rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
-	rotateZ(map(mouseX, 0, width, -PI, PI));
+		rotateX(-HALF_PI);
+		rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
+		rotateZ(map(mouseX, 0, width, -PI, PI));
 
-	for(var i = 0; i < geocentricCoordinates.length; i++){
-
-		
-
-		push();
-		translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
-		fill(255);
-		sphere(2, 3, 3);
-		pop();
-
-	}
+		for(var i = 0; i < geocentricCoordinates.length; i++){
+			push();
+				translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
+				fill(255);
+				sphere(2, 3, 3);
+			pop();
+		}
 	pop();
 
 	fill(0, 200);
 	plane(width * 2, height * 2);
+}
+
+function convertAllLatlon(){ //no currently used, just put it here to save it. May need some rewrite to work.
+	for(var lon = 0; lon < 360; lon += 10){
+		for(var lat = 0; lat < 360; lat += 10){
+
+			var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
+			for(var i = 0; i < coordinates.length; i++){
+				coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 300);
+			}
+
+			geocentricCoordinates.push(coordinates);
+		}
+	}
 }
 
 /*
