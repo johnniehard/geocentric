@@ -16,6 +16,8 @@ var wgs84 = {
 	f: 298.257223563
 };
 
+var zoomLevel = 0;
+
 function preload(){
 	coastlines = loadJSON("coastlines.geojson");
 }
@@ -59,6 +61,8 @@ function setup() {
 function draw() {
 	background(0);
 
+	camera(0, 0, zoomLevel);
+
 	push();
 		rotateX(-HALF_PI);
 		rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
@@ -68,13 +72,17 @@ function draw() {
 			push();
 				translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
 				fill(255);
-				sphere(2, 3, 3);
+				sphere(1, 3, 3);
 			pop();
 		}
 	pop();
 
 	fill(0, 200);
 	plane(width * 2, height * 2);
+}
+
+function mouseWheel(event){
+	zoomLevel += event.delta;
 }
 
 function convertAllLatlon(){ //no currently used, just put it here to save it. May need some rewrite to work.
