@@ -7,9 +7,14 @@
 
 */
 
-var bessel;
+var theEllipsoid;
 var geocentricCoordinates = [];
 var coastlines;
+
+var wgs84 = {
+	a: 6378137,
+	f: 298.257223563
+};
 
 function preload(){
 	coastlines = loadJSON("coastlines.geojson");
@@ -20,24 +25,46 @@ function setup() {
 
 	background(50);
 
+	coastlines = coastlines.features;
 	console.log("geoJSON loaded");
 
-	bessel = new Ellipsoid(6377397.155, 299.1528128);
+	// theEllipsoid = new Ellipsoid(6377397.155, 299.1528128); // bessel
+	theEllipsoid = new Ellipsoid(wgs84.a, wgs84.f);
 	
+	// for(var lon = 0; lon < 360; lon += 10){
+	// 	for(var lat = 0; lat < 360; lat += 10){
 
+	// 		var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
+	// 		for(var i = 0; i < coordinates.length; i++){
+	// 			coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 300);
+	// 		}
 
-	for(var lon = 0; lon < 360; lon += 10){
-		for(var lat = 0; lat < 360; lat += 10){
+	// 		geocentricCoordinates.push(coordinates);
 
-			var coordinates = bessel.getGeocentric(lat, lon, 0);
+	// 	}
+	// }
+
+	for(var feature = 0; feature < coastlines.length; feature++){
+
+		var geometry = coastlines[feature].geometry.coordinates;
+
+		for(var pair = 0; pair < geometry.length; pair += 1){
+
+			var lat = geometry[pair][1];
+			var lon = geometry[pair][0];
+			lon *= -1;
+			var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
 			for(var i = 0; i < coordinates.length; i++){
-				coordinates[i] = map(coordinates[i], 0, bessel.a, 0, 300);
+				coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 300);
 			}
 
 			geocentricCoordinates.push(coordinates);
 
 		}
+
 	}
+
+
 
 	console.log(geocentricCoordinates.length);
 	console.log(geocentricCoordinates);
@@ -51,12 +78,20 @@ function setup() {
 }
 
 function draw() {
-	background(50);
+	background(0);
 
-	camera(0, 0, 100);
+	//camera(0, 0, 0);
+
+
+	
 	// rotateX(HALF_PIZ);
+
+	push();
+	rotateX(-HALF_PI);
 	rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
-	rotateZ(map(mouseX, 0, width, 0, HALF_PI));
+	rotateZ(map(mouseX, 0, width, -PI, PI));
+
+
 
 	//camera(map(mouseX, 0, width, -10000, 10000), 0, map(mouseY, 0, height, 0, 200000));
 
@@ -66,13 +101,17 @@ function draw() {
 
 		push();
 		translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
-		ambientMaterial(255);
+		//ambientMaterial(255);
 		fill(255);
-		sphere(5);
+		sphere(2, 3, 3);
 		//sphere(map(mouseY, 0, height, 2, 200));
 		pop();
 
 	}
+	pop();
+
+	fill(0, 200);
+	plane(width * 2, height * 2);
 
 
 
