@@ -59,41 +59,21 @@ function setup() {
 			}
 
 			geocentricCoordinates.push(coordinates);
-
 		}
 
 	}
 
-
-
 	console.log(geocentricCoordinates.length);
 	console.log(geocentricCoordinates);
-
-	
-
-	// camera
-
-
-
 }
 
 function draw() {
 	background(0);
 
-	//camera(0, 0, 0);
-
-
-	
-	// rotateX(HALF_PIZ);
-
 	push();
 	rotateX(-HALF_PI);
 	rotateX(map(mouseY, 0, height, -HALF_PI, HALF_PI));
 	rotateZ(map(mouseX, 0, width, -PI, PI));
-
-
-
-	//camera(map(mouseX, 0, width, -10000, 10000), 0, map(mouseY, 0, height, 0, 200000));
 
 	for(var i = 0; i < geocentricCoordinates.length; i++){
 
@@ -101,10 +81,8 @@ function draw() {
 
 		push();
 		translate(geocentricCoordinates[i][0], geocentricCoordinates[i][1], geocentricCoordinates[i][2]);
-		//ambientMaterial(255);
 		fill(255);
 		sphere(2, 3, 3);
-		//sphere(map(mouseY, 0, height, 2, 200));
 		pop();
 
 	}
@@ -112,9 +90,6 @@ function draw() {
 
 	fill(0, 200);
 	plane(width * 2, height * 2);
-
-
-
 }
 
 /*
