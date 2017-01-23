@@ -9,11 +9,20 @@
 
 var bessel;
 var geocentricCoordinates = [];
+var coastlines;
+
+function preload(){
+	coastlines = loadJSON("coastlines.geojson");
+}
 
 function setup() {
-	bessel = new Ellipsoid(6377397.155, 299.1528128);
-
 	createCanvas(windowWidth, windowHeight, WEBGL);
+
+	background(50);
+
+	console.log("geoJSON loaded");
+
+	bessel = new Ellipsoid(6377397.155, 299.1528128);
 	
 
 
