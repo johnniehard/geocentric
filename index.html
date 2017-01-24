@@ -10,29 +10,55 @@
 		<script type="text/javascript" src="js/three.min.js"></script>
 		<script language="javascript" type="text/javascript" src="geocentric.js"></script>
 		<script type="text/javascript">
-		
-		var renderer = new THREE.WebGLRenderer();
-		renderer.setSize(window.innerWidth, window.innerHeight);
-		document.body.appendChild(renderer.domElement);
 
-		var camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 500);
+		var renderer, scene, camera,
+			width = window.innerWidth,
+			height = window.innerHeight,
+			coastlines;
 
-		camera.position.set(0, 0, 100);
-		camera.lookAt(new THREE.Vector3(0, 0, 0));
+		fetchJSONFile('coastlines.geojson', function(data){
+		    coastlines = data;
+		});
 
-		var scene = new THREE.Scene();
+		function init(){
+			renderer = new THREE.WebGLRenderer();
+			renderer.setSize(width, height);
+			document.body.appendChild(renderer.domElement);
 
-		var material = new THREE.LineBasicMaterial({color: 0x0000ff});
+			camera = new THREE.PerspectiveCamera(45, width / height, 1, 500);
 
-		var geometry = new THREE.Geometry();
-		geometry.vertices.push(new THREE.Vector3(-10, 0, 0));
-		geometry.vertices.push(new THREE.Vector3(0, 10, 0));
-		geometry.vertices.push(new THREE.Vector3(10, 0, 0));
+			camera.position.set(0, 0, 100);
+			camera.lookAt(new THREE.Vector3(0, 0, 0));
 
-		var line = new THREE.Line(geometry, material);
+			scene = new THREE.Scene();
+		}
 
-		scene.add(line);
-		renderer.render(scene, camera);
+		function animate(){
+			requestAnimationFrame(animate);
+
+			//movement stuff
+
+			render();
+		}
+
+		function render(){
+			renderer.render(scene, camera);
+		}
+
+		//from: http://stackoverflow.com/questions/14388452/how-do-i-load-a-json-object-from-a-file-with-ajax
+		function fetchJSONFile(path, callback) {
+		    var httpRequest = new XMLHttpRequest();
+		    httpRequest.onreadystatechange = function() {
+		        if (httpRequest.readyState === 4) {
+		            if (httpRequest.status === 200) {
+		                var data = JSON.parse(httpRequest.responseText);
+		                if (callback) callback(data);
+		            }
+		        }
+		    };
+		    httpRequest.open('GET', path);
+		    httpRequest.send(); 
+		}
 
 		</script>
 	</body> 
