@@ -18,7 +18,27 @@
 			coastlines;
 
 		fetchJSONFile('coastlines.geojson', function(data){
-		    coastlines = data;
+		    coastlines = data.features;
+		    console.log("geoJSON loaded\ncalculating geocentric coordinates");
+
+	    	theEllipsoid = new Ellipsoid();
+	
+			for(var feature = 0; feature < coastlines.length; feature++){
+				var geometry = coastlines[feature].geometry.coordinates;
+				for(var pair = 0; pair < geometry.length; pair += 1){
+					var lat = geometry[pair][1];
+					var lon = geometry[pair][0];
+					lon *= -1;
+					var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
+					for(var i = 0; i < coordinates.length; i++){
+						coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 300); //THIS NUMBER???
+					}
+					geometry[pair][0] = coordinates[0];
+					geometry[pair][1] = coordinates[1];
+					geometry[pair][2] = coordinates[2];
+				}
+			}
+
 		    init();
 		});
 
