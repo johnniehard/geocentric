@@ -21,6 +21,7 @@ function fetchJSONFile(path, callback) {
  //TODO: add transform = false logic
  //		 or is that even nessesary? well yes maybe, that way you can set the 
  //		 size of the unprojected coordinates...
+ //TODO: add argument to define the ellipsoid
 function loadLineString(path, semiMajor3D, callback, transform = true){
 	fetchJSONFile(path, function(data){
 		var theEllipsoid = new Ellipsoid();
@@ -43,6 +44,17 @@ function loadLineString(path, semiMajor3D, callback, transform = true){
 	});
 }
 
-function transformMultiPolygon(features){
-
+function loadPoint(path, semiMajor3D, callback, transform = true){
+	fetchJSONFile(path, function(data){
+		var theEllipsoid = new Ellipsoid();
+		for(var feature = 0; feature < data.features.length; feature++){
+			var pair = data.features[feature].geometry.coordinates;
+			var lat = pair[1];
+			var lon = pair[0];
+			var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
+			for(var i = 0; i < coordinates.length; i++){ pair[i] = map(coordinates[i], 0, theEllipsoid.a, 0, semiMajor3D); }
+		}
+		console.log("File " + path + " loaded.\n");
+		callback(data);
+	});
 }
