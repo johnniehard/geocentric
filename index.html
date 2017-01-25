@@ -28,6 +28,28 @@ Trying to use that as sort of a style guide.
 
 		var objects = [];
 
+		//introtween
+		var position = {
+			scale: 0,
+			rotation: 0
+		};
+		var target = {
+			scale: 1,
+			rotation: (Math.PI*2) * 4
+		};
+		var tween = new TWEEN.Tween(position).to(target, 2000);
+		//tween.delay(500);
+		tween.onUpdate(function(){
+			//console.log(objects.length);
+			for(var object = 0; object < objects.length; object++){
+				//console.log(object);
+				objects[object].rotateX = position.rotation;
+				var scale = position.scale;
+				// scale = new THREE.Vector3(scale, scale, scale);
+				objects[object].scale.set(scale, scale, scale);// = scale;
+			}
+		});
+
 
 
 		fetchJSONFile('coastlines.geojson', function(data){
@@ -66,15 +88,15 @@ Trying to use that as sort of a style guide.
 
 			camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
 
-			camera.position.set(0, 0, 200);
+			camera.position.set(0, 0, 500);
 			//camera.lookAt(new THREE.Vector3(0, 0, 0));
 
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.addEventListener('change', render);
 			controls.enablePan = false;
 			controls.enableDamping = true;
-			controls.minDistance = 110;
-			controls.maxDistance = 500;
+			controls.minDistance = 200;
+			controls.maxDistance = 700;
 			controls.rotateSpeed = 0.1;
 
 			scene = new THREE.Scene();
@@ -100,21 +122,36 @@ Trying to use that as sort of a style guide.
 				scene.add(line);
 			}
 
+			console.log(objects.length);
+
+			tween.start();
 			animate();		
 		}
 
 		function animate(){
+
+			render();
+
 			requestAnimationFrame(animate);
 
 			controls.update();
 			//movement stuff
-			render();
+
+			TWEEN.update();
+
+			
 		}
 
 		function render(){
 			renderer.render(scene, camera);
 		}
 
+		function test(s){
+			for(var object = 0; object < objects.length; object++){
+				console.log(s);
+				objects[object].scale.set(0, 0, 0);// =  new THREE.Vector3(s, s, s);
+			}
+		}
 
 
 		</script>
