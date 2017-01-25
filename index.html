@@ -15,11 +15,12 @@ Trying to use that as sort of a style guide.
 	</head>
 	<body>
 		<script type="text/javascript" src="js/three.min.js"></script>
+		<script type="text/javascript" src="js/OrbitControls.js"></script>
 		<script language="javascript" type="text/javascript" src="geocentric.js"></script>
 		<script language="javascript" type="text/javascript" src="jsonloader.js"></script>
 		<script type="text/javascript">
 
-		var renderer, scene, camera,
+		var renderer, scene, camera, controls,
 			width = window.innerWidth,
 			height = window.innerHeight,
 			coastlines;
@@ -39,7 +40,6 @@ Trying to use that as sort of a style guide.
 				for(var pair = 0; pair < geometry.length; pair += 1){
 					var lat = geometry[pair][1];
 					var lon = geometry[pair][0];
-					lon *= -1;
 					var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
 					for(var i = 0; i < coordinates.length; i++){
 						coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 10); //THIS MAGIC NUMBER??? What's a suitable scale in three.js?
@@ -64,6 +64,13 @@ Trying to use that as sort of a style guide.
 			camera.position.set(0, 0, 50);
 			//camera.lookAt(new THREE.Vector3(0, 0, 0));
 
+			controls = new THREE.OrbitControls(camera, renderer.domElement);
+			controls.addEventListener('change', render);
+			controls.enablePan = false;
+			controls.enableDamping = true;
+			controls.minDistance = 10;
+			controls.maxDistance = 200;
+
 			scene = new THREE.Scene();
 
 			var material = new THREE.LineBasicMaterial({color: 0xff00ff});
@@ -79,6 +86,9 @@ Trying to use that as sort of a style guide.
 						geometry.vertices.push(new THREE.Vector3(x, y, z));
 					}
 				var line = new THREE.Line(geometry, material);
+
+				line.rotateX(-(Math.PI / 2));
+
 				objects.push(line);
 				scene.add(line);
 			}
@@ -89,6 +99,7 @@ Trying to use that as sort of a style guide.
 		function animate(){
 			requestAnimationFrame(animate);
 
+			controls.update();
 			//movement stuff
 			render();
 		}
