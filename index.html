@@ -54,6 +54,10 @@ Trying to use that as sort of a style guide.
 
 		});
 
+		function transformMultiPolygon(features){
+
+		}
+
 		function init(){
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(width, height);
@@ -70,7 +74,7 @@ Trying to use that as sort of a style guide.
 			controls.enableDamping = true;
 			controls.minDistance = 110;
 			controls.maxDistance = 500;
-			controls.rotateSpeed = 0.5;
+			controls.rotateSpeed = 0.1;
 
 			scene = new THREE.Scene();
 			scene.fog = new THREE.FogExp2(0x000000, 0.0025);
