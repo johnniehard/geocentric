@@ -57,9 +57,14 @@ Trying to use that as sort of a style guide.
 
 
 		var coastlines;
+		var cities;
 		loadLineString("geodata/coastlines.geojson", semiMajor3D, function(data){
 			coastlines = data;
-			init();
+			// init();
+			loadPoint("geodata/cities.geojson", semiMajor3D, function(data){
+				cities = data;
+				init();
+			})
 		});
 
 		function init(){
@@ -84,8 +89,7 @@ Trying to use that as sort of a style guide.
 			scene = new THREE.Scene();
 			scene.fog = new THREE.FogExp2(0x000000, 0.0025);
 
-			var material = new THREE.LineBasicMaterial({color: 0xffffff});
-
+			var coastline_material = new THREE.LineBasicMaterial({color: 0xffffff});
 			// coastline coordinates to three.js lines
 			for(var feature = 0; feature < coastlines.features.length; feature++){
 				var coordinates = coastlines.features[feature].geometry.coordinates;
@@ -96,13 +100,27 @@ Trying to use that as sort of a style guide.
 						var z = coordinates[i][2];
 						geometry.vertices.push(new THREE.Vector3(x, y, z));
 					}
-				var line = new THREE.Line(geometry, material);
+				var line = new THREE.Line(geometry, coastline_material);
 
 				line.rotateX(-(Math.PI / 2));
 				line.scale.set(0, 0, 0);
 
 				objects.push(line);
 				scene.add(line);
+			}
+
+			var city_material = new THREE.PointsMaterial({color: 0xff0000, size: 2});
+			// cities to three.js points
+			for(var feature = 0; feature < cities.features.length; feature++){
+				var coordinates = cities.features[feature].geometry.coordinates;
+				var geometry = new THREE.Geometry();
+				var x = coordinates[0];
+				var y = coordinates[1];
+				var z = coordinates[2];
+				geometry.vertices.push(new THREE.Vector3(x, y, z));
+				var point = new THREE.Points(geometry, city_material);
+				objects.push(point);
+				scene.add(point);
 			}
 
 			console.log(objects.length);
