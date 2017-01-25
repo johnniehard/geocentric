@@ -70,10 +70,11 @@ Trying to use that as sort of a style guide.
 			controls.enableDamping = true;
 			controls.minDistance = 10;
 			controls.maxDistance = 200;
+			controls.rotateSpeed = 0.5;
 
 			scene = new THREE.Scene();
 
-			var material = new THREE.LineBasicMaterial({color: 0xff00ff});
+			var material = new THREE.LineBasicMaterial({color: 0xffffff});
 
 			// coastline coordinates to three.js lines
 			for(var feature = 0; feature < coastlines.length; feature++){
