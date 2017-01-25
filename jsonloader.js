@@ -23,7 +23,6 @@ function fetchJSONFile(path, callback) {
  //		 size of the unprojected coordinates...
 function loadLineString(path, semiMajor3D, callback, transform = true){
 	fetchJSONFile(path, function(data){
-		console.log("File " + path + " loaded.\n");
 		var theEllipsoid = new Ellipsoid();
 		for(var feature = 0; feature < data.features.length; feature++){
 			var geometry = data.features[feature].geometry.coordinates;
@@ -39,6 +38,7 @@ function loadLineString(path, semiMajor3D, callback, transform = true){
 				geometry[pair][2] = coordinates[2];
 			}			
 		}
+		console.log("File " + path + " loaded.\n");
 		callback(data);
 	});
 }
