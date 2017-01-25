@@ -28,6 +28,8 @@ Trying to use that as sort of a style guide.
 
 		var objects = [];
 
+		var semiMajor3D = 150; //size of semi major axis in 3D-space
+
 		//introtween
 		var position = {
 			scale: 0,
@@ -51,37 +53,14 @@ Trying to use that as sort of a style guide.
 		});
 
 
-
-		fetchJSONFile('geodata/coastlines.geojson', function(data){
-		    coastlines = data.features;
-		    console.log("geoJSON loaded\ncalculating geocentric coordinates");
-
-	    	theEllipsoid = new Ellipsoid();
-	
-			for(var feature = 0; feature < coastlines.length; feature++){
-				var geometry = coastlines[feature].geometry.coordinates;
-				for(var pair = 0; pair < geometry.length; pair += 1){
-					var lat = geometry[pair][1];
-					var lon = geometry[pair][0];
-					var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
-					for(var i = 0; i < coordinates.length; i++){
-						coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, 150); //THIS MAGIC NUMBER??? What's a suitable scale in three.js?
-					}
-					geometry[pair][0] = coordinates[0];
-					geometry[pair][1] = coordinates[1];
-					geometry[pair][2] = coordinates[2];
-				}
-			}
-
-		    init();
-
+		var coastlines;
+		loadLineString("geodata/coastlines.geojson", semiMajor3D, function(data){
+			coastlines = data;
+			init();
 		});
 
-		function transformMultiPolygon(features){
-
-		}
-
 		function init(){
+			console.log(coastlines);
 			renderer = new THREE.WebGLRenderer();
 			renderer.setSize(width, height);
 			document.body.appendChild(renderer.domElement);
@@ -105,8 +84,8 @@ Trying to use that as sort of a style guide.
 			var material = new THREE.LineBasicMaterial({color: 0xffffff});
 
 			// coastline coordinates to three.js lines
-			for(var feature = 0; feature < coastlines.length; feature++){
-				var coordinates = coastlines[feature].geometry.coordinates;
+			for(var feature = 0; feature < coastlines.features.length; feature++){
+				var coordinates = coastlines.features[feature].geometry.coordinates;
 				var geometry = new THREE.Geometry();
 					for(var i = 0; i < coordinates.length; i+=1){
 						var x = coordinates[i][0];

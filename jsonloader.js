@@ -1,3 +1,4 @@
+
 //from: http://stackoverflow.com/questions/14388452/how-do-i-load-a-json-object-from-a-file-with-ajax
 function fetchJSONFile(path, callback) {
     var httpRequest = new XMLHttpRequest();
@@ -11,4 +12,37 @@ function fetchJSONFile(path, callback) {
     };
     httpRequest.open('GET', path);
     httpRequest.send(); 
+}
+
+//===================================
+// geojson to geocentric coordinates
+//===================================
+
+ //TODO: add transform = false logic
+ //		 or is that even nessesary? well yes maybe, that way you can set the 
+ //		 size of the unprojected coordinates...
+function loadLineString(path, semiMajor3D, callback, transform = true){
+	fetchJSONFile(path, function(data){
+		console.log("File " + path + " loaded.\n");
+		var theEllipsoid = new Ellipsoid();
+		for(var feature = 0; feature < data.features.length; feature++){
+			var geometry = data.features[feature].geometry.coordinates;
+			for(var pair = 0; pair < geometry.length; pair += 1){
+				var lat = geometry[pair][1];
+				var lon = geometry[pair][0];
+				var coordinates = theEllipsoid.getGeocentric(lat, lon, 0);
+				for(var i = 0; i < coordinates.length; i++){
+					coordinates[i] = map(coordinates[i], 0, theEllipsoid.a, 0, semiMajor3D);
+				}
+				geometry[pair][0] = coordinates[0];
+				geometry[pair][1] = coordinates[1];
+				geometry[pair][2] = coordinates[2];
+			}			
+		}
+		callback(data);
+	});
+}
+
+function transformMultiPolygon(features){
+
 }
