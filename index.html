@@ -24,8 +24,12 @@ Trying to use that as sort of a style guide.
 
 		var renderer, scene, camera, controls,
 			width = window.innerWidth,
-			height = window.innerHeight,
-			coastlines, coastGroup,
+			height = window.innerHeight;
+
+		var raycaster, intersects;
+		var mouse, INTERSECTED;
+
+		var	coastlines, coastGroup,
 			cities, cityGroup;
 
 		var semiMajor3D = 150; //size of semi major axis in 3D-space
@@ -71,6 +75,10 @@ Trying to use that as sort of a style guide.
 
 			camera.position.set(0, 0, 500);
 
+			raycaster = new THREE.Raycaster();
+			raycaster.params.Points.threshold = 20;
+			mouse = new THREE.Vector2();
+
 			//controls setup
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.addEventListener('change', render);
@@ -85,19 +93,26 @@ Trying to use that as sort of a style guide.
 			scene.fog = new THREE.FogExp2(0x000000, 0.0025);
 
 			parseCoastlines();
-			parseCities();
+			parseCitiesSpheres();
 
 			introScaleTween.start();
 			cityTween.start();
 			animate();
 			window.addEventListener( 'resize', onWindowResize, false );
+			document.addEventListener( 'mousemove', onDocumentMouseMove, false );
+		}
+
+		function onDocumentMouseMove( event ) {
+				event.preventDefault();
+				mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
+				mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
 		}
 
 		function animate(){
-			render();
 			requestAnimationFrame(animate);
 			controls.update();
 			TWEEN.update();
+			render();
 		}
 
 		function onWindowResize() {
@@ -107,12 +122,39 @@ Trying to use that as sort of a style guide.
 		}
 
 		function render(){
+			raycaster.setFromCamera(mouse, camera);
+			intersects = raycaster.intersectObjects(cityGroup.children);
+			//if ( intersects.length > 0 ) console.log("intersect!!");
+			handleIntersects();
 			renderer.render(scene, camera);
+		}
+
+		function handleIntersects(){
+			if ( intersects.length > 0 ) {
+				// console.log(intersects[0]);
+				// intersects[0].object.material.color.set( 0xff0000 );
+				if ( INTERSECTED != intersects[ 0 ].object ) {
+					if ( INTERSECTED ) {
+						INTERSECTED.material.color.set( INTERSECTED.currentHex );
+						INTERSECTED.scale.set(1, 1, 1);
+					}
+					INTERSECTED = intersects[ 0 ].object;
+					INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
+					INTERSECTED.scale.set(3, 3, 3);
+					INTERSECTED.material.color.set( 0xff0000 );
+				}
+			} else {
+				if ( INTERSECTED ) {
+						INTERSECTED.material.color.set( INTERSECTED.currentHex );
+						INTERSECTED.scale.set(1, 1, 1);
+					}
+				INTERSECTED = null;
+			}
 		}
 
 		// cities to three.js points
 		function parseCities(){
-			cityGroup = new THREE.Object3D();
+			cityGroup = new THREE.Group();
 			var city_material = new THREE.PointsMaterial({color: 0xff0000, size: 2});
 			for(var feature = 0; feature < cities.features.length; feature++){
 				var coordinates = cities.features[feature].geometry.coordinates;
@@ -129,9 +171,29 @@ Trying to use that as sort of a style guide.
 			scene.add(cityGroup);
 		}
 
+		function parseCitiesSpheres(){
+			cityGroup = new THREE.Group();
+			
+			// var material = new THREE.MeshLambertMaterial( {color: 0xffaaaa} );
+			for(var feature = 0; feature < cities.features.length; feature++){
+				var material = new THREE.MeshBasicMaterial( { color: 0xffaa00, transparent: true, blending: THREE.AdditiveBlending } )
+				var coordinates = cities.features[feature].geometry.coordinates;
+				var geometry = new THREE.SphereGeometry(1, 8, 8);
+				var x = coordinates[0];
+				var y = coordinates[1];
+				var z = coordinates[2];
+				var sphere = new THREE.Mesh(geometry, material);
+				sphere.position.set(x, y, z);
+				cityGroup.add(sphere);
+			}
+			cityGroup.rotateX(-(Math.PI / 2));
+			cityGroup.rotateZ(target.rotation);
+			scene.add(cityGroup);
+		}
+
 		// coastline coordinates to three.js lines
 		function parseCoastlines(){
-			coastGroup = new THREE.Object3D();
+			coastGroup = new THREE.Group();
 			var coastline_material = new THREE.LineBasicMaterial({color: 0xffffff});
 			for(var feature = 0; feature < coastlines.features.length; feature++){
 				var coordinates = coastlines.features[feature].geometry.coordinates;
