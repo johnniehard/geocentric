@@ -28,6 +28,7 @@ Trying to use that as sort of a style guide.
 			coastlines;
 
 		var objects = [];
+		var citiesObjects = [];
 
 		var semiMajor3D = 150; //size of semi major axis in 3D-space
 
@@ -54,7 +55,24 @@ Trying to use that as sort of a style guide.
 				objects[object].scale.set(scale, scale, scale);
 			}
 		});
+		// introScaleTween.onComplete(function (){
+		// 	cityTween.start();
+		// });
 
+		var cityStart = {
+			scale: 3
+		};
+		var cityEnd = {
+			scale: 1
+		}
+		var cityTween = new TWEEN.Tween(cityStart).to(cityEnd, 3000);
+		cityTween.easing(TWEEN.Easing.Exponential.In);
+		cityTween.onUpdate(function(){
+			for(var object = 0; object < citiesObjects.length; object++){
+				var scale = cityStart.scale;
+				citiesObjects[object].scale.set(scale, scale, scale);
+			}
+		});
 
 		var coastlines;
 		var cities;
@@ -119,14 +137,21 @@ Trying to use that as sort of a style guide.
 				var z = coordinates[2];
 				geometry.vertices.push(new THREE.Vector3(x, y, z));
 				var point = new THREE.Points(geometry, city_material);
-				objects.push(point);
+				var scale = cityStart.scale;
+				point.rotateX(-(Math.PI / 2));
+				point.rotateZ(target.rotation);
+				point.scale.set(scale, scale, scale);
+				citiesObjects.push(point);
+				//objects.push(point);
 				scene.add(point);
 			}
 
 			console.log(objects.length);
 
 			introScaleTween.start();
-			animate();		
+			cityTween.start();
+			animate();
+			window.addEventListener( 'resize', onWindowResize, false );
 		}
 
 		function animate(){
@@ -143,17 +168,15 @@ Trying to use that as sort of a style guide.
 			
 		}
 
+		function onWindowResize() {
+				camera.aspect = window.innerWidth / window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize( window.innerWidth, window.innerHeight );
+		}
+
 		function render(){
 			renderer.render(scene, camera);
 		}
-
-		function test(s){
-			for(var object = 0; object < objects.length; object++){
-				console.log(s);
-				objects[object].scale.set(0, 0, 0);// =  new THREE.Vector3(s, s, s);
-			}
-		}
-
 
 		</script>
 	</body> 
