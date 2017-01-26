@@ -25,60 +25,36 @@ Trying to use that as sort of a style guide.
 		var renderer, scene, camera, controls,
 			width = window.innerWidth,
 			height = window.innerHeight,
-			coastlines;
-
-		var objects = [];
-		var citiesObjects = [];
+			coastlines, coastGroup,
+			cities, cityGroup;
 
 		var semiMajor3D = 150; //size of semi major axis in 3D-space
 
 		//introtween
-		var position = {
-			scale: 0,
-			rotation: 0
-		};
-		var target = {
-			scale: 1,
-			rotation: (Math.PI*2) * 1.75
-		};
+		var position = { scale: 0, rotation: 0 };
+		var target = { scale: 1, rotation: (Math.PI*2) * 1.75 };
 		var introScaleTween = new TWEEN.Tween(position).to(target, 3000);
-		// introScaleTween.delay(1000);
 		introScaleTween.easing(TWEEN.Easing.Quartic.InOut);
-		// introScaleTween.easing(TWEEN.Easing.Back.Out);
-		// introScaleTween.easing(TWEEN.Easing.Elastic.Out);
 		introScaleTween.onUpdate(function(){
-			//console.log(objects.length);
-			for(var object = 0; object < objects.length; object++){
-				//console.log(object);
-				objects[object].rotation.set(-(Math.PI / 2), 0, position.rotation);
-				var scale = position.scale;
-				objects[object].scale.set(scale, scale, scale);
-			}
+			coastGroup.rotation.set(-(Math.PI / 2), 0, position.rotation);
+			var scale = position.scale;
+			coastGroup.scale.set(scale, scale, scale);
 		});
-		// introScaleTween.onComplete(function (){
-		// 	cityTween.start();
-		// });
 
-		var cityStart = {
-			scale: 3
-		};
-		var cityEnd = {
-			scale: 1
-		}
+		//citytween
+		var cityStart = { scale: 3 };
+		var cityEnd = {	scale: 1 };
 		var cityTween = new TWEEN.Tween(cityStart).to(cityEnd, 3000);
 		cityTween.easing(TWEEN.Easing.Exponential.In);
 		cityTween.onUpdate(function(){
-			for(var object = 0; object < citiesObjects.length; object++){
-				var scale = cityStart.scale;
-				citiesObjects[object].scale.set(scale, scale, scale);
-			}
+			var scale = cityStart.scale;
+			cityGroup.scale.set(scale, scale, scale);
 		});
 
-		var coastlines;
-		var cities;
+		//loaddata
+		//this is really messy, especially if I were to add more things to load. How to do it right?
 		loadLineString("geodata/coastlines.geojson", semiMajor3D, function(data){
 			coastlines = data;
-			// init();
 			loadPoint("geodata/cities.geojson", semiMajor3D, function(data){
 				cities = data;
 				init();
@@ -95,6 +71,7 @@ Trying to use that as sort of a style guide.
 
 			camera.position.set(0, 0, 500);
 
+			//controls setup
 			controls = new THREE.OrbitControls(camera, renderer.domElement);
 			controls.addEventListener('change', render);
 			controls.enablePan = false;
@@ -107,46 +84,8 @@ Trying to use that as sort of a style guide.
 			scene = new THREE.Scene();
 			scene.fog = new THREE.FogExp2(0x000000, 0.0025);
 
-			var coastline_material = new THREE.LineBasicMaterial({color: 0xffffff});
-			// coastline coordinates to three.js lines
-			for(var feature = 0; feature < coastlines.features.length; feature++){
-				var coordinates = coastlines.features[feature].geometry.coordinates;
-				var geometry = new THREE.Geometry();
-					for(var i = 0; i < coordinates.length; i+=1){
-						var x = coordinates[i][0];
-						var y = coordinates[i][1];
-						var z = coordinates[i][2];
-						geometry.vertices.push(new THREE.Vector3(x, y, z));
-					}
-				var line = new THREE.Line(geometry, coastline_material);
-
-				line.rotateX(-(Math.PI / 2));
-				line.scale.set(0, 0, 0);
-
-				objects.push(line);
-				scene.add(line);
-			}
-
-			var city_material = new THREE.PointsMaterial({color: 0xff0000, size: 2});
-			// cities to three.js points
-			for(var feature = 0; feature < cities.features.length; feature++){
-				var coordinates = cities.features[feature].geometry.coordinates;
-				var geometry = new THREE.Geometry();
-				var x = coordinates[0];
-				var y = coordinates[1];
-				var z = coordinates[2];
-				geometry.vertices.push(new THREE.Vector3(x, y, z));
-				var point = new THREE.Points(geometry, city_material);
-				var scale = cityStart.scale;
-				point.rotateX(-(Math.PI / 2));
-				point.rotateZ(target.rotation);
-				point.scale.set(scale, scale, scale);
-				citiesObjects.push(point);
-				//objects.push(point);
-				scene.add(point);
-			}
-
-			console.log(objects.length);
+			parseCoastlines();
+			parseCities();
 
 			introScaleTween.start();
 			cityTween.start();
@@ -155,17 +94,10 @@ Trying to use that as sort of a style guide.
 		}
 
 		function animate(){
-
 			render();
-
 			requestAnimationFrame(animate);
-
 			controls.update();
-			//movement stuff
-
 			TWEEN.update();
-
-			
 		}
 
 		function onWindowResize() {
@@ -176,6 +108,44 @@ Trying to use that as sort of a style guide.
 
 		function render(){
 			renderer.render(scene, camera);
+		}
+
+		// cities to three.js points
+		function parseCities(){
+			cityGroup = new THREE.Object3D();
+			var city_material = new THREE.PointsMaterial({color: 0xff0000, size: 2});
+			for(var feature = 0; feature < cities.features.length; feature++){
+				var coordinates = cities.features[feature].geometry.coordinates;
+				var geometry = new THREE.Geometry();
+				var x = coordinates[0];
+				var y = coordinates[1];
+				var z = coordinates[2];
+				geometry.vertices.push(new THREE.Vector3(x, y, z));
+				var point = new THREE.Points(geometry, city_material);
+				point.rotateX(-(Math.PI / 2));
+				point.rotateZ(target.rotation);
+				cityGroup.add(point);
+			}
+			scene.add(cityGroup);
+		}
+
+		// coastline coordinates to three.js lines
+		function parseCoastlines(){
+			coastGroup = new THREE.Object3D();
+			var coastline_material = new THREE.LineBasicMaterial({color: 0xffffff});
+			for(var feature = 0; feature < coastlines.features.length; feature++){
+				var coordinates = coastlines.features[feature].geometry.coordinates;
+				var geometry = new THREE.Geometry();
+					for(var i = 0; i < coordinates.length; i+=1){
+						var x = coordinates[i][0];
+						var y = coordinates[i][1];
+						var z = coordinates[i][2];
+						geometry.vertices.push(new THREE.Vector3(x, y, z));
+					}
+				var line = new THREE.Line(geometry, coastline_material);
+				coastGroup.add(line);
+			}
+			scene.add(coastGroup);
 		}
 
 		</script>
