@@ -33,7 +33,10 @@ Trying to use that as sort of a style guide.
 			cities, cityGroup;
 
 		var semiMajor3D = 150; //size of semi major axis in 3D-space
-		var cameraDistance = 500;
+		var cameraDistance = 500; //initial camera distance, used to dynamically adjust fog parameters
+
+		var listener, loader,
+			sound;
 
 		//introtween
 		var position = { scale: 0, rotation: 0 };
@@ -94,6 +97,20 @@ Trying to use that as sort of a style guide.
 			// scene.fog = new THREE.FogExp2(0x000000, 0.0025);
 
 			setFog();
+
+			listener= new THREE.AudioListener();
+			loader = new THREE.AudioLoader();
+
+			sound = new THREE.PositionalAudio(listener);
+				// sound.setBuffer(hoverSoundBuffer);
+			loader.load('sound/button-16.wav', function(buffer){
+				sound.setBuffer(buffer);
+				sound.setRefDistance(10);
+				sound.play();
+			})
+
+
+			camera.add( listener );
 			
 
 			parseCoastlines();
@@ -148,6 +165,8 @@ Trying to use that as sort of a style guide.
 					INTERSECTED = intersects[ 0 ].object;
 					INTERSECTED.currentHex = INTERSECTED.material.color.getHex();
 					INTERSECTED.scale.set(3, 3, 3);
+					sound.play();
+					console.log(INTERSECTED.userData.name);
 					INTERSECTED.material.color.set( 0xff5555 );
 				}
 			} else {
@@ -191,6 +210,11 @@ Trying to use that as sort of a style guide.
 				var z = coordinates[2];
 				var sphere = new THREE.Mesh(geometry, material);
 				sphere.position.set(x, y, z);
+				sphere.userData = {
+					name: cities.features[feature].properties.name
+				};
+				//sphere.add(sound);
+
 				cityGroup.add(sphere);
 			}
 			cityGroup.rotateX(-(Math.PI / 2));
